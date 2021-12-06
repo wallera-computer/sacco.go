@@ -20,7 +20,7 @@ import (
 // to a BIP-32 mnemonic.
 type Wallet struct {
 	keyPair         *hdkeychain.ExtendedKey
-	publicKey       *hdkeychain.ExtendedKey
+	PublicKeyRaw    *hdkeychain.ExtendedKey
 	PublicKey       string `json:"public_key,omitempty"`
 	PublicKeyBech32 string `json:"public_key_bech_32,omitempty"`
 	PrivateKey      string `json:"private_key,omitempty"`
@@ -48,8 +48,8 @@ func FromMnemonic(hrp, mnemonic, path string) (*Wallet, error) {
 		return nil, ErrCouldNotNeuter(err)
 	}
 
-	w.publicKey = pk
-	w.PublicKey = w.publicKey.String()
+	w.PublicKeyRaw = pk
+	w.PublicKey = w.PublicKeyRaw.String()
 
 	pkb32, err := w.bech32AminoPubKey()
 	if err != nil {
@@ -62,7 +62,7 @@ func FromMnemonic(hrp, mnemonic, path string) (*Wallet, error) {
 }
 
 func (w Wallet) bech32AminoPubKey() (string, error) {
-	pkec, _ := w.publicKey.ECPubKey()
+	pkec, _ := w.PublicKeyRaw.ECPubKey()
 
 	var cdc = amino.NewCodec()
 
@@ -159,7 +159,7 @@ func (w Wallet) Sign(tx TransactionPayload, chainID, accountNumber, sequenceNumb
 	rBytes := signatureRaw.R.Bytes()
 	sBytes := signatureRaw.S.Bytes()
 
-	pubKey, err := w.publicKey.ECPubKey()
+	pubKey, err := w.PublicKeyRaw.ECPubKey()
 	if err != nil {
 		return SignedTransactionPayload{}, err
 	}
